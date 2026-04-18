@@ -1,0 +1,117 @@
+syntax = "proto3";
+
+package minipostgres.query.v1;
+
+option java_multiple_files = true;
+option java_package = "database.kernel.grpc.query.v1";
+option java_outer_classname = "QueryServiceProto";
+
+// ═══════════════════════════════════════════════════════════════════════
+// Query Execution Service — gRPC contract for frontend clients to
+// execute SQL queries against the MiniPostgres kernel.
+//
+// This is the primary entry point for all query execution. Clients
+// send SQL strings and receive structured results.
+//
+// Contract rules (additive-only, no field reuse, explicit deprecation):
+//   - New fields MUST use the next available field number
+//   - Removed fields MUST be marked as `reserved`
+//   - No field number may ever be reused
+// ═══════════════════════════════════════════════════════════════════════
+
+service QueryService {
+  // Execute one or more SQL commands.
+  rpc Execute(ExecuteRequest) returns (ExecuteResponse);
+
+  // Get current database state (tables, indexes, data files).
+  rpc GetState(StateRequest) returns (StateResponse);
+
+  // Stream query results for large result sets.
+  rpc ExecuteStream(ExecuteRequest) returns (stream QueryResultRow);
+}
+
+// ── Execute ────────────────────────────────────────────────────────────
+
+message ExecuteRequest {
+  string sql = 1;                  // Raw SQL string (may contain multiple statements)
+  string request_id = 2;          // Correlation/tracing ID
+  int32 max_rows = 3;             // Max rows to return (0 = unlimited)
+}
+
+message ExecuteResponse {
+  bool ok = 1;
+  string error = 2;               // Error message if ok=false
+  repeated CommandResult results = 3;  // One result per SQL statement
+  int32 command_count = 4;
+  int64 total_elapsed_nanos = 5;
+}
+
+message CommandResult {
+  string sql = 1;                  // The original SQL command
+  string output = 2;              // Human-readable output (REPL-style)
+  ResultSet result_set = 3;       // Structured result set (for SELECTs)
+  bool is_query = 4;              // true if SELECT, false if DDL/DML
+  string strategy = 5;            // Execution strategy used (SeqScan, IndexScan)
+  int64 elapsed_nanos = 6;        // Execution time in nanoseconds
+}
+
+message ResultSet {
+  repeated ColumnMeta columns = 1;
+  repeated Row rows = 2;
+  int32 row_count = 3;
+}
+
+message ColumnMeta {
+  string name = 1;
+  string type = 2;                // INT, FLOAT, VARCHAR
+  int32 size = 3;                 // VARCHAR max size
+}
+
+message Row {
+  repeated Value values = 1;
+}
+
+message Value {
+  oneof val {
+    int32 int_val = 1;
+    float float_val = 2;
+    string string_val = 3;
+    bool is_null = 4;
+  }
+}
+
+// ── State ──────────────────────────────────────────────────────────────
+
+message StateRequest {
+  string request_id = 1;
+}
+
+message StateResponse {
+  bool ok = 1;
+  string data_directory = 2;
+  int32 table_count = 3;
+  repeated TableInfo tables = 4;
+  repeated string indexes = 5;
+  repeated string data_files = 6;
+}
+
+message TableInfo {
+  string name = 1;
+  string schema = 2;              // Human-readable schema description
+  repeated ColumnMeta columns = 3;
+}
+
+// ── Streaming ──────────────────────────────────────────────────────────
+
+message QueryResultRow {
+  Row row = 1;
+  bool is_last = 2;               // True for the final message in the stream
+  ResultSetMeta meta = 3;         // Only populated on the first row
+}
+
+message ResultSetMeta {
+  repeated ColumnMeta columns = 1;
+  string strategy = 2;
+  int64 elapsed_nanos = 3;
+  int32 total_rows = 4;
+}

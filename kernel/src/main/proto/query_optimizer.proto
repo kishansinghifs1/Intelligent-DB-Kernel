@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package minipostgres.optimizer.v1;
+
+option java_multiple_files = true;
+option java_package = "database.kernel.grpc.optimizer.v1";
+option java_outer_classname = "QueryOptimizerProto";
+
+// ═══════════════════════════════════════════════════════════════════════
+// Query Optimizer Service — gRPC contract between Java Kernel and
+// Python RL Optimizer.
+//
+// Contract rules (additive-only, no field reuse, explicit deprecation):
+//   - New fields MUST use the next available field number
+//   - Removed fields MUST be marked as `reserved`
+//   - No field number may ever be reused
+// ═══════════════════════════════════════════════════════════════════════
+
+service QueryOptimizerService {
+  // Predict the best scan strategy for a query state.
+  // Expected latency: < 5ms (in-memory Q-table lookup)
+  rpc Predict(PredictRequest) returns (PredictResponse);
+
+  // Report execution reward for RL learning.
+  // Idempotent via idempotency_key — safe to retry.
+  rpc ReportReward(RewardRequest) returns (RewardResponse);
+
+  // Health check for the optimizer service.
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+}
+
+// ── Predict ────────────────────────────────────────────────────────────
+
+message PredictRequest {
+  int32 num_rows = 1;            // Table row count (page count as proxy)
+  bool is_range = 2;             // Is this a range predicate (BETWEEN)?
+  bool has_index = 3;            // Does an index exist on predicate column?
+  int32 predicate_type = 4;      // 0=equality, 1=narrow_range, 2=wide_range
+  int32 estimated_matches = 5;   // Estimated matching rows
+  string request_id = 6;         // Correlation ID for tracing
+}
+
+message PredictResponse {
+  int32 action = 1;              // 0=SeqScan, 1=IndexScan
+  string state_key = 2;          // Encoded state key for debugging
+}
+
+// ── ReportReward ───────────────────────────────────────────────────────
+
+message RewardRequest {
+  QueryState state = 1;
+  int32 action = 2;              // 0=SeqScan, 1=IndexScan
+  double reward = 3;             // Negative execution time in ms
+  string idempotency_key = 4;    // Idempotency key for safe retries
+}
+
+message QueryState {
+  int32 num_rows = 1;
+  bool is_range = 2;
+  bool has_index = 3;
+  int32 predicate_type = 4;
+  int32 estimated_matches = 5;
+}
+
+message RewardResponse {
+  string status = 1;
+  double old_value = 2;
+  double new_value = 3;
+  double normalized_reward = 4;
+  double epsilon = 5;
+  bool idempotent = 6;
+}
+
+// ── HealthCheck ────────────────────────────────────────────────────────
+
+message HealthCheckRequest {}
+
+message HealthCheckResponse {
+  string status = 1;             // "healthy" or "starting"
+  bool ready = 2;
+  int32 q_table_states = 3;
+  int32 experience_count = 4;
+  string version = 5;
+}

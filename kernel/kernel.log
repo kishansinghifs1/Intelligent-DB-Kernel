@@ -1,0 +1,52 @@
+
+╔══════════════════════════════════════════════════════╗
+║          🐘 MiniPostgres Kernel v2.0                ║
+║    Spring Boot + gRPC Database Engine                ║
+║                                                      ║
+║    Boundaries:                                       ║
+║      🌐 Gateway     (REST + gRPC)                   ║
+║      ⚡ Query Engine (RL-optimized scans)            ║
+║      💾 Storage     (BufferPool + B+Tree)            ║
+║      🧠 Advisor     (gRPC → Python RL)              ║
+╚══════════════════════════════════════════════════════╝
+
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.4.4)
+
+2026-04-17T20:04:19.880+05:30  INFO 100306 --- [minipostgres-kernel] [           main] database.kernel.KernelApplication        : Starting KernelApplication v1.0.0-SNAPSHOT using Java 17.0.18 with PID 100306 (/home/kishan-singh/workspace/ongoing-projects :>/Postgre-SQL-Clone/kernel/target/kernel-1.0.0-SNAPSHOT.jar started by kishan-singh in /home/kishan-singh/workspace/ongoing-projects :>/Postgre-SQL-Clone/kernel)
+2026-04-17T20:04:19.882+05:30  INFO 100306 --- [minipostgres-kernel] [           main] database.kernel.KernelApplication        : No active profile set, falling back to 1 default profile: "default"
+2026-04-17T20:04:21.042+05:30  INFO 100306 --- [minipostgres-kernel] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-04-17T20:04:21.053+05:30  INFO 100306 --- [minipostgres-kernel] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-04-17T20:04:21.053+05:30  INFO 100306 --- [minipostgres-kernel] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.39]
+2026-04-17T20:04:21.071+05:30  INFO 100306 --- [minipostgres-kernel] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-04-17T20:04:21.072+05:30  INFO 100306 --- [minipostgres-kernel] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1155 ms
+2026-04-17T20:04:21.383+05:30  INFO 100306 --- [minipostgres-kernel] [           main] d.kernel.advisor.ModelAdvisorConfig      : gRPC channel configured: localhost:50051
+2026-04-17T20:04:21.409+05:30  INFO 100306 --- [minipostgres-kernel] [           main] d.kernel.advisor.ModelAdvisorService     : ModelAdvisorService initialized — gRPC stub ready
+2026-04-17T20:04:21.431+05:30  INFO 100306 --- [minipostgres-kernel] [           main] d.kernel.cache.QueryCacheService         : QueryCacheService initialized
+2026-04-17T20:04:21.438+05:30  INFO 100306 --- [minipostgres-kernel] [           main] database.kernel.storage.DiskManager      : Data directory 'kernel-data' created
+2026-04-17T20:04:21.439+05:30  INFO 100306 --- [minipostgres-kernel] [           main] database.kernel.storage.BufferPool       : BufferPool initialized with capacity=100 pages
+2026-04-17T20:04:21.440+05:30  INFO 100306 --- [minipostgres-kernel] [           main] database.kernel.storage.CatalogService   : CatalogService initialized
+2026-04-17T20:04:21.442+05:30  INFO 100306 --- [minipostgres-kernel] [           main] d.kernel.storage.IndexManagerService     : IndexManagerService initialized
+2026-04-17T20:04:21.445+05:30  INFO 100306 --- [minipostgres-kernel] [           main] d.kernel.execution.QueryEngineService    : QueryEngineService initialized
+2026-04-17T20:04:21.456+05:30  INFO 100306 --- [minipostgres-kernel] [           main] d.kernel.gateway.QueryGrpcService        : QueryGrpcService initialized — gRPC query server ready
+2026-04-17T20:04:21.470+05:30  INFO 100306 --- [minipostgres-kernel] [           main] database.kernel.cache.CacheConfig        : Caffeine CacheManager configured: maxSize=10000, ttl=5s
+2026-04-17T20:04:21.574+05:30  INFO 100306 --- [minipostgres-kernel] [           main] o.s.v.b.OptionalValidatorFactoryBean     : Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Bean Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
+2026-04-17T20:04:21.668+05:30  INFO 100306 --- [minipostgres-kernel] [onPool-worker-1] d.kernel.advisor.ModelAdvisorService     : RL Optimizer health: status=healthy, ready=true, q_table_states=1, version=2.0.0
+2026-04-17T20:04:22.168+05:30  INFO 100306 --- [minipostgres-kernel] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 3 endpoints beneath base path '/actuator'
+2026-04-17T20:04:22.208+05:30  INFO 100306 --- [minipostgres-kernel] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-04-17T20:04:22.239+05:30  INFO 100306 --- [minipostgres-kernel] [           main] database.kernel.KernelApplication        : Started KernelApplication in 2.648 seconds (process running for 2.921)
+2026-04-17T20:04:39.375+05:30  INFO 100306 --- [minipostgres-kernel] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-04-17T20:04:39.375+05:30  INFO 100306 --- [minipostgres-kernel] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-04-17T20:04:39.376+05:30  INFO 100306 --- [minipostgres-kernel] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-04-17T20:04:39.405+05:30  INFO 100306 --- [minipostgres-kernel] [nio-8080-exec-1] database.kernel.storage.CatalogService   : Table 'users' created with schema: Schema(id INT, name VARCHAR(50))
+2026-04-17T20:04:39.456+05:30  INFO 100306 --- [minipostgres-kernel] [ionShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-04-17T20:04:39.460+05:30  INFO 100306 --- [minipostgres-kernel] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2026-04-17T20:04:39.464+05:30  INFO 100306 --- [minipostgres-kernel] [ionShutdownHook] database.kernel.storage.BufferPool       : Flushing 1 dirty pages to disk...
+2026-04-17T20:04:39.464+05:30  INFO 100306 --- [minipostgres-kernel] [ionShutdownHook] database.kernel.storage.BufferPool       : Buffer pool flushed.

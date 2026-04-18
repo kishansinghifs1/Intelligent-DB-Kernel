@@ -1,0 +1,10 @@
+node_modules
+.env
+dist
+coverage
+*.log
+.git
+.gitignore
+Dockerfile
+render.yaml
+SYSTEM_ARCHITECTURE.md

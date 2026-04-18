@@ -1,0 +1,51 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "db-engine-api-gateway",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-04-17",
+  "vars": {
+    "USER_SERVICE_URL": "http://127.0.0.1:3001",
+    "KERNEL_SERVICE_URL": "http://127.0.0.1:8080",
+    "OPTIMIZER_SERVICE_URL": "http://127.0.0.1:8000",
+    "GATEWAY_REQUEST_TIMEOUT_MS": "15000",
+    "GATEWAY_RATE_LIMIT_WINDOW_MS": "60000",
+    "GATEWAY_RATE_LIMIT_MAX": "120",
+    "GATEWAY_RATE_LIMIT_AUTH_MAX": "20",
+    "GATEWAY_RATE_LIMIT_USER_MAX": "100",
+    "GATEWAY_RATE_LIMIT_DB_MAX": "80",
+    "GATEWAY_RATE_LIMIT_OPTIMIZER_MAX": "60",
+    "ALLOWED_ORIGINS": "*"
+  }
+  // "compatibility_flags": [
+  //   "nodejs_compat"
+  // ],
+  // "vars": {
+  //   "MY_VAR": "my-variable"
+  // },
+  // "kv_namespaces": [
+  //   {
+  //     "binding": "MY_KV_NAMESPACE",
+  //     "id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  //   }
+  // ],
+  // "r2_buckets": [
+  //   {
+  //     "binding": "MY_BUCKET",
+  //     "bucket_name": "my-bucket"
+  //   }
+  // ],
+  // "d1_databases": [
+  //   {
+  //     "binding": "MY_DB",
+  //     "database_name": "my-database",
+  //     "database_id": ""
+  //   }
+  // ],
+  // "ai": {
+  //   "binding": "AI"
+  // },
+  // "observability": {
+  //   "enabled": true,
+  //   "head_sampling_rate": 1
+  // }
+}
