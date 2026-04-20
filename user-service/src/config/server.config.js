@@ -13,7 +13,7 @@ function toNonNegativeInteger(value, fallback) {
 }
 
 function toBoolean(value, fallback) {
-    if (value === undefined || value === null || value === '') {
+    if (value === undefined || value === null || value === "") {
         return fallback;
     }
 
@@ -29,14 +29,33 @@ function toBoolean(value, fallback) {
     return fallback;
 }
 
+const DEFAULT_MONGODB_TIMEOUT_MS = 20000;
+
 module.exports = {
     PORT: process.env.PORT || 3001,
+
     ATLAS_DB_URL: process.env.ATLAS_DB_URL,
+
+    MONGODB_SERVER_SELECTION_TIMEOUT_MS: toPositiveInteger(
+        process.env.MONGODB_SERVER_SELECTION_TIMEOUT_MS,
+        DEFAULT_MONGODB_TIMEOUT_MS
+    ),
+    MONGODB_CONNECT_TIMEOUT_MS: toPositiveInteger(
+        process.env.MONGODB_CONNECT_TIMEOUT_MS,
+        DEFAULT_MONGODB_TIMEOUT_MS
+    ),
+    MONGODB_SOCKET_TIMEOUT_MS: toPositiveInteger(
+        process.env.MONGODB_SOCKET_TIMEOUT_MS,
+        DEFAULT_MONGODB_TIMEOUT_MS
+    ),
+
     NODE_ENV: process.env.NODE_ENV || 'development',
+
     JWT_SECRET: process.env.JWT_SECRET,
     JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '24h',
     JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
     JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
+
     REDIS_ENABLED: toBoolean(process.env.REDIS_ENABLED, true),
     REDIS_URL: process.env.REDIS_URL,
     REDIS_HOST: process.env.REDIS_HOST || '127.0.0.1',
@@ -44,6 +63,7 @@ module.exports = {
     REDIS_PASSWORD: process.env.REDIS_PASSWORD || '',
     REDIS_DB: toNonNegativeInteger(process.env.REDIS_DB, 0),
     REDIS_KEY_PREFIX: process.env.REDIS_KEY_PREFIX || 'user-service',
+    
     USER_PROFILE_CACHE_TTL_SECONDS: toPositiveInteger(process.env.USER_PROFILE_CACHE_TTL_SECONDS, 120),
     AUTH_RATE_LIMIT_WINDOW_MS: toPositiveInteger(process.env.AUTH_RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000),
     AUTH_RATE_LIMIT_MAX: toPositiveInteger(process.env.AUTH_RATE_LIMIT_MAX, 10),

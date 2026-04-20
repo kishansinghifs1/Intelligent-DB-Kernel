@@ -1,5 +1,8 @@
 const logger = require('../config/logger.config');
 
+const BaseError = require('../errors/base.error');
+const ConflictError = require('../errors/conflict.error');
+const InternalServerError = require('../errors/internalserver.error');
 const NotFound = require('../errors/notfound.error');
 
 const { User } = require('../models');
@@ -25,7 +28,17 @@ class UserRepository {
             return user;
         } catch (error) {
             logger.error('UserRepository.createUser:', error);
-             
+
+            if (error instanceof BaseError) {
+                throw error;
+            }
+
+            if (error && error.code === 11000) {
+                const field = Object.keys(error.keyPattern || error.keyValue || {})[0] || 'field';
+                throw new ConflictError(`${field} already exists`, 'Duplicate value');
+            }
+
+            throw new InternalServerError(error?.message || 'Failed to create user');
         }
     }
 
@@ -178,7 +191,12 @@ class UserRepository {
             return updatedUser;
         } catch (error) {
             logger.error('UserRepository.clearRefreshTokenSession:', error);
-            throw error;
+
+            if (error instanceof BaseError) {
+                throw error;
+            }
+
+            throw new InternalServerError(error?.message || 'Failed to clear refresh token session');
         }
     }
 }

@@ -1,57 +1,52 @@
 const mongoose = require('mongoose');
-const { ATLAS_DB_URL, NODE_ENV } = require('./server.config');
 
-// Helper function to build connection hints based on error types
-function buildConnectionHint(error) {
-    if (!error) return 'No error information available';
+const BadRequest = require('../errors/badrequest.error');
+const InternalServerError = require('../errors/internalserver.error');
 
-    if (error.name === 'MongoNetworkError') {
-        return 'Check your network connection and MongoDB server status';
-    }
-    if (error.name === 'MongoParseError') {
-        return 'Verify that your ATLAS_DB_URL is correctly formatted';
-    }
-    if (error.name === 'MongoServerSelectionError') {
-        return 'Ensure your MongoDB server is running and accessible';
-    }
-    if (error.name === 'MongoTimeoutError') {
-        return 'The connection attempt timed out. Check your network and MongoDB server performance';
-    }
-    return 'Refer to the error message for more details';
-}
-
-// Helper function to convert environment variable to a positive integer with a fallback
-function toPositiveInteger(value, fallback) {
-    const parsed = Number.parseInt(value, 10);
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
-}
-
-const MONGODB_CONNECT_TIMEOUT_MS = toPositiveInteger(process.env.MONGODB_CONNECT_TIMEOUT_MS, 20000);
-
+const {
+    ATLAS_DB_URL,
+    NODE_ENV,
+    MONGODB_SERVER_SELECTION_TIMEOUT_MS,
+    MONGODB_CONNECT_TIMEOUT_MS,
+    MONGODB_SOCKET_TIMEOUT_MS
+} = require('./server.config');
 
 class DBConnection {
+
+
+    //constructor implements a singleton pattern to ensure only one DB connection instance exists
     constructor() {
+
         if (DBConnection.instance) {
             return DBConnection.instance;
         }
+
         this.isConnected = false;
+
+        // Store the instance on the class itself to enforce singleton behavior
         DBConnection.instance = this;
     }
 
     async connect() {
+
         if (this.isConnected) {
             console.log('DB Connection: Using existing connection');
             return;
         }
+
         try {
+            
             if (!ATLAS_DB_URL) {
-                throw new Error('ATLAS_DB_URL is not configured');
+                throw new BadRequest(
+                    'ATLAS_DB_URL',
+                    'Database connection string is missing from environment configuration'
+                );
             }
 
             await mongoose.connect(ATLAS_DB_URL, {
-                serverSelectionTimeoutMS: MONGODB_CONNECT_TIMEOUT_MS,
+                serverSelectionTimeoutMS: MONGODB_SERVER_SELECTION_TIMEOUT_MS,
                 connectTimeoutMS: MONGODB_CONNECT_TIMEOUT_MS,
-                socketTimeoutMS: MONGODB_CONNECT_TIMEOUT_MS
+                socketTimeoutMS: MONGODB_SOCKET_TIMEOUT_MS
             });
 
             this.isConnected = true;
@@ -59,11 +54,10 @@ class DBConnection {
             console.log(`DB Connection: New connection established (${NODE_ENV || 'unknown'})`);
             
         } catch (error) {
-            const hint = buildConnectionHint(error);
+
             console.error('Unable to connect to the DB server');
-            console.error(`MongoDB startup error: ${error?.name || 'Error'} - ${error?.message || error}`);
-            console.error(`MongoDB troubleshooting hint: ${hint}`);
-            throw error;
+            
+            throw new InternalServerError(`${error?.message || 'MongoDB connection failed'}`);
         }
     }
 

@@ -1,5 +1,7 @@
 const { createClient } = require('redis');
+
 const logger = require('./logger.config');
+
 const {
     REDIS_ENABLED,
     REDIS_URL,

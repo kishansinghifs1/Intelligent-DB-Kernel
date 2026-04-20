@@ -3,7 +3,9 @@ const { UserRepository } = require('../repositories');
 const { comparePassword, validatePasswordStrength } = require('../utils/password.utils');
 const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = require('../utils/jwt.utils');
 
+const BaseError = require('../errors/base.error');
 const BadRequest = require('../errors/badrequest.error');
+const InternalServerError = require('../errors/internalserver.error');
 const Unauthorized = require('../errors/unauthorized.error');
 
 const logger = require('../config/logger.config');
@@ -28,10 +30,12 @@ class UserService {
         this.userRepository = new UserRepository();
     }
 
+    // Helper methods for caching user profiles in Redis
     getUserProfileCacheKey(userId) {
         return `cache:user-profile:${userId}`;
     }
 
+    // Methods to get/set/invalidate cached user profiles
     async getCachedUserProfile(userId) {
         const cacheKey = this.getUserProfileCacheKey(userId);
 
@@ -39,7 +43,6 @@ class UserService {
             return await redisClient.getJson(cacheKey);
         } catch (error) {
             logger.warn(`UserService cache read failed for user ${userId}: ${error.message}`);
-            return null;
         }
     }
 
@@ -68,6 +71,7 @@ class UserService {
      * @param {Object} userData - User registration data
      * @returns {Promise<Object>} - User object without password
      */
+    
     async registerUser(userData) {
         try {
             // Validate password strength
@@ -93,11 +97,17 @@ class UserService {
 
             logger.info(`New user registered: ${user.email}`);
 
-            // Return user without password
+            // Return user without password -> for more understaanding read the model file that help it to do that 
             return user.toJSON();
+
         } catch (error) {
             logger.error('UserService.registerUser:', error);
-            throw error;
+
+            if (error instanceof BaseError) {
+                throw error;
+            }
+
+            throw new InternalServerError(error?.message || 'Unable to register user');
         }
     }
 
@@ -107,6 +117,7 @@ class UserService {
      * @param {string} password - User password
      * @returns {Promise<Object>} - Access token, refresh token, and user data
      */
+    
     async loginUser(email, password) {
         try {
             // Find user by email
@@ -154,7 +165,12 @@ class UserService {
             };
         } catch (error) {
             logger.error('UserService.loginUser:', error);
-            throw error;
+
+            if (error instanceof BaseError) {
+                throw error;
+            }
+
+            throw new InternalServerError(error?.message || 'Unable to login');
         }
     }
 
@@ -330,7 +346,7 @@ class UserService {
             const bucketName = process.env.S3_BUCKET_NAME;
 
             if (!bucketName) {
-                throw new Error('S3_BUCKET_NAME is not configured');
+                throw new InternalServerError('S3_BUCKET_NAME is not configured');
             }
 
             const command = new PutObjectCommand({
